@@ -1,0 +1,41 @@
+version: "3.8"
+
+name: go_app
+
+services:
+  go_server:
+    environment:
+      APP_NAME: ${APP_NAME}
+      VERSION: ${VERSION}
+      SERVER_ADDRESS: "0.0.0.0:${SERVER_PORT}"
+      POSTGRES_CONN: "postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@psql:${POSTGRES_PORT}/${POSTGRES_DATABASE}"
+      MAX_POOL_SIZE: ${MAX_POOL_SIZE}
+      LOG_LEVEL: ${LOG_LEVEL}
+    image: go_app:1.0.0
+    build: .
+    depends_on:
+      - psql
+    ports:
+      - "${SERVER_PORT}:${SERVER_PORT}"
+    restart: unless-stopped
+    container_name: server
+
+  psql:
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DATABASE}
+    image: postgres:14-alpine
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    restart: unless-stopped
+    container_name: psql
+
+
+volumes:
+  pg-data:
+    driver: local
